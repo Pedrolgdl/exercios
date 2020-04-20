@@ -1,0 +1,17 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+
+int main(void)
+{
+   double base, expoente;
+   printf("\nDigite o valor desejado: ");
+   scanf("%lf", &base);
+   if(base<0) {
+      printf("\n Número inválido. ");
+   }
+   for(expoente=0;expoente<=10;expoente++) {
+      printf("%.0lf\n", pow(base, expoente));
+   }
+return 0;
+}
