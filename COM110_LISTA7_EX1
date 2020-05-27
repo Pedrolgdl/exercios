@@ -1,0 +1,36 @@
+#include <stdio.h>
+
+int main(void){
+    int mat[2][2];
+    int i, // índice da linha
+        j; // índice da coluna
+    int maiorN;
+    int linhamaiorN;
+
+    printf("\n Informe os 4 numeros da matriz: \n\n");
+    for(i=0;i<2;i++){
+        for(j=0;j<2;j++){
+           scanf("%i", &mat[i][j]);
+           if(j==0)
+                maiorN = mat[i][j];
+           else if(mat[i][j]>maiorN)
+                maiorN = mat[i][j];
+        }
+        
+        
+        for(int j=0;j<2;j++){
+            mat[i][j]*=maiorN;
+        }
+    }
+
+
+    printf("\n A matriz resultante da multiplicacao dos elementos pelo maior elemento da linha é : \n\n");
+
+    for (i=0;i<2;i++){
+        for(j=0;j<2;j++){
+            printf("%i \n",mat[i][j]);
+        }
+    }
+   
+    return 0;
+}
