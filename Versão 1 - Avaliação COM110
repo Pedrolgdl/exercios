@@ -1,0 +1,376 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <locale.h>
+
+/* Definicoes, para facilitar o uso da funcao para desenhar o mapa */
+#define CHAO 0
+#define PAREDE 1
+#define VOCE 2
+#define GRAMA 3
+#define OUTRA_COISA 4
+#define SAIDA 5
+#define FAKE 6
+#define OK 1
+#define ERRO 2
+
+
+int coluna_atual = 1,
+    linha_atual = 1,
+    fase,fim_jogo;
+
+/* Mapa 1 */
+int mapa1[12][10] = { 
+1,1,1,0,0,0,0,0,0,0,
+1,0,1,1,1,1,1,1,1,1,
+1,0,0,0,0,0,0,1,0,1,
+1,0,0,0,0,1,1,1,0,1,
+1,0,0,0,0,3,0,0,0,1,
+1,0,0,1,3,3,3,0,0,1,
+1,0,0,0,0,1,0,0,0,1,
+1,0,0,0,0,0,0,0,0,1,
+1,1,1,4,4,4,4,1,0,1,
+1,0,0,0,0,0,0,0,0,1,
+1,1,1,1,1,1,1,1,0,1,
+0,0,0,0,0,0,0,0,5,0
+};
+
+/* Mapa 2 */
+int mapa2[21][20] = { 
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,0,1,0,0,0,3,0,0,0,0,0,0,1,0,0,0,0,0,1,
+1,0,1,0,0,0,3,3,0,0,0,0,0,1,0,0,0,0,0,1,
+1,0,1,1,3,1,1,1,1,1,1,0,0,1,0,0,0,0,0,1,
+1,0,1,0,0,0,0,0,1,0,0,0,0,1,0,1,3,0,0,1,
+1,0,1,1,1,1,3,1,1,0,0,0,0,1,0,1,3,3,3,1,
+1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,1,
+1,0,1,0,1,0,0,0,1,1,1,1,3,0,0,1,0,0,0,1,
+1,0,1,1,3,1,0,0,0,0,0,0,1,0,0,0,1,0,0,1,
+1,0,1,3,3,3,1,0,0,0,0,0,1,0,0,4,1,0,0,1,
+1,0,1,3,3,3,3,1,1,1,1,0,1,4,4,4,0,0,0,1,
+1,0,1,0,0,0,1,0,0,0,0,0,1,0,3,0,3,1,0,1,
+1,0,1,0,0,0,1,0,0,1,0,0,1,3,0,3,0,1,0,1,
+1,0,1,0,0,1,1,0,0,1,0,0,1,0,3,0,3,1,0,1,
+1,0,1,0,0,1,0,0,3,1,1,1,1,3,0,3,0,1,0,1,
+1,0,1,0,0,1,0,0,1,0,4,0,1,0,0,0,0,1,0,1,
+1,0,1,0,0,1,0,0,1,0,4,0,0,1,0,0,0,1,0,1,
+1,0,1,0,0,1,0,1,1,0,4,0,0,0,1,0,0,4,4,1,
+1,0,0,0,0,1,0,0,0,0,4,0,0,0,0,1,0,0,0,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0
+
+};
+
+/* Mapa 3 */
+int mapa3[20][21] = { 
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,6,1,1,1,1,1,0,
+1,0,1,0,0,0,3,0,0,0,0,0,0,1,0,0,0,0,0,1,0,
+1,0,1,0,0,0,3,3,0,0,0,0,0,1,0,0,0,0,0,1,0,
+1,0,1,1,3,1,1,1,1,1,1,0,0,1,0,0,0,0,0,1,0,
+1,0,1,0,0,0,0,0,1,0,0,0,0,1,0,1,3,0,0,1,0,
+1,0,1,1,1,1,3,1,1,0,0,0,0,1,0,1,3,3,3,1,0,
+1,0,0,0,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,1,0,
+1,0,1,0,1,0,0,0,1,1,1,1,3,0,0,1,0,0,0,1,0,
+1,0,1,1,3,1,0,0,0,0,0,0,1,0,0,4,4,0,0,1,0,
+1,0,1,3,3,3,1,0,0,0,0,0,1,0,4,4,4,0,0,1,0,
+1,0,1,3,3,3,3,1,1,1,1,0,1,4,4,4,4,0,0,1,0,
+1,0,1,0,0,0,1,0,0,0,0,0,1,0,3,0,3,1,6,1,0,
+1,0,1,0,0,0,1,0,0,1,0,0,1,3,0,3,0,1,0,1,0,
+1,0,1,0,0,1,1,0,0,1,0,0,1,0,3,0,3,1,0,1,0,
+1,0,1,0,0,1,0,0,3,1,1,1,1,3,0,3,0,1,0,1,0,
+1,0,1,0,0,1,0,0,1,0,4,0,3,0,0,0,0,1,0,1,0,
+1,0,1,0,0,1,0,0,1,0,4,0,0,1,0,0,0,1,0,0,5,
+1,0,1,0,0,1,0,1,1,0,4,0,0,0,1,0,0,1,3,1,0,
+1,0,0,0,0,1,0,0,0,0,3,0,0,0,0,1,0,0,0,1,0,
+1,6,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0
+
+};
+
+/* Funcao para desenhar o Mapa 1*/
+int desenhar_mapa1()
+{
+   int linha,coluna;
+   for (linha=0;linha<11;linha++) {
+      for (coluna=0;coluna<10;coluna++) {
+         if ((linha == linha_atual) && (coluna == coluna_atual)) {
+            printf("@ ");
+            continue;
+         }
+         if (mapa1[linha][coluna] == CHAO)
+            printf("  ");
+         if (mapa1[linha][coluna] == PAREDE)
+            printf("* ");
+         if (mapa1[linha][coluna] == GRAMA)
+            printf(". ");
+         if (mapa1[linha][coluna] == OUTRA_COISA)
+            printf("+ ");
+         if (mapa1[linha][coluna] == SAIDA)
+            printf("  ");
+      }
+      printf("\n");
+   }
+   return OK;
+}
+
+/* Funcao para desenhar o Mapa 2*/
+int desenhar_mapa2()
+{
+   int linha,coluna;
+   for (linha=0;linha<20;linha++) {
+      for (coluna=0;coluna<20;coluna++) {
+         if ((linha == linha_atual) && (coluna == coluna_atual)) {
+            printf("@ ");
+            continue;
+         }
+         if (mapa2[linha][coluna] == CHAO)
+            printf("  ");
+         if (mapa2[linha][coluna] == PAREDE)
+            printf("* ");
+         if (mapa2[linha][coluna] == GRAMA)
+            printf(". ");
+         if (mapa2[linha][coluna] == OUTRA_COISA)
+            printf("+ ");
+         if (mapa2[linha][coluna] == SAIDA)
+            printf("  ");
+      }
+      printf("\n");
+   }
+   return OK;
+}
+
+/* Funcao para desenhar o Mapa 3*/
+int desenhar_mapa3()
+{
+   int linha,coluna;
+   for (linha=0;linha<20;linha++) {
+      for (coluna=0;coluna<20;coluna++) {
+         if ((linha == linha_atual) && (coluna == coluna_atual)) {
+            printf("@ ");
+            continue;
+         }
+         if (mapa3[linha][coluna] == CHAO)
+            printf("  ");
+         if (mapa3[linha][coluna] == PAREDE)
+            printf("* ");
+         if (mapa3[linha][coluna] == GRAMA)
+            printf(". ");
+         if (mapa3[linha][coluna] == OUTRA_COISA)
+            printf("+ ");
+         if (mapa3[linha][coluna] == SAIDA)
+            printf("  ");
+        if (mapa3[linha][coluna] == FAKE)
+            printf("  ");
+      }
+      printf("\n");
+   }
+   return OK;
+}
+
+int main()
+{
+	struct x{
+	char nome[15]; 
+};
+	struct x registro;
+	printf("digite seu nome: ");
+	scanf("%s", &registro.nome);
+   char movimento;
+   while ((movimento != 'x') && (movimento != 'X') && (fase != 2)) {
+   	printf("==================\n");
+    printf("||    FASE 1    ||\n");
+    printf("==================\n\n");
+      desenhar_mapa1();
+      printf("\nControles:\n\n  (W)\n(A)+(D)\n  (S)\n\n"); /* Controles */
+      if ((scanf("%c",&movimento))==0) {
+         printf("mensagem de erro..\n");
+         getchar(); getchar();
+         return ERRO;
+      }
+      if ((movimento == 'w') || (movimento == 'W')) {
+         linha_atual = linha_atual - 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa1[linha_atual][coluna_atual] != CHAO) && (mapa1[linha_atual][coluna_atual] != GRAMA)  && (mapa1[linha_atual][coluna_atual] != SAIDA)) {
+            linha_atual = linha_atual + 1;
+            printf("\n\nOps... ali nao =)\n");
+            getchar(); getchar();
+         }
+      }
+      if ((movimento == 's') || (movimento == 'S')) {
+         linha_atual = linha_atual + 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa1[linha_atual][coluna_atual] != CHAO) && (mapa1[linha_atual][coluna_atual] != GRAMA)  && (mapa1[linha_atual][coluna_atual] != SAIDA)) {
+            linha_atual = linha_atual - 1;
+            printf("\n\nOps... ali nao =)\n");
+            getchar(); getchar();
+         }
+           if (mapa1[linha_atual][coluna_atual] == SAIDA) {
+           	 getchar(); 
+           	 printf("\n Fase 1 completa.\n", registro.nome );
+           	   getchar(); 
+           	   fase = 2;
+         }
+      }
+      if ((movimento == 'd') || (movimento == 'D')) {
+         coluna_atual = coluna_atual + 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa1[linha_atual][coluna_atual] != CHAO) && (mapa1[linha_atual][coluna_atual] != GRAMA)  && (mapa1[linha_atual][coluna_atual] != SAIDA)) {
+            coluna_atual = coluna_atual - 1;
+            printf("\n\nOps... ali nao =)\n");
+            getchar(); getchar();
+         }
+      }
+      if ((movimento == 'a') || (movimento == 'A')) {
+         coluna_atual = coluna_atual - 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa1[linha_atual][coluna_atual] != CHAO) && (mapa1[linha_atual][coluna_atual] != GRAMA)  && (mapa1[linha_atual][coluna_atual] != SAIDA)) {
+            coluna_atual = coluna_atual + 1;
+            printf("\n\nOps... ali nao =)\n");
+            getchar(); getchar();
+         }
+      }
+          system("cls");
+   }
+
+   
+   
+   if(fase == 2){
+   	linha_atual = 1;
+   	coluna_atual = 1;
+   	 while ((movimento != 'x') && (movimento != 'X') && (fase != 3)) {
+   	printf("==================\n");
+    printf("||    FASE 2    ||\n");
+    printf("==================\n\n");
+      desenhar_mapa2();
+      printf("  (W)\n(A)+(D)\n  (S)\n\n"); /* Controles */
+      if ((scanf("%c",&movimento))==0) {
+         printf("mensagem de erro..\n");
+         getchar(); getchar();
+         return ERRO;
+      }
+      if ((movimento == 'w') || (movimento == 'W')) {
+         linha_atual = linha_atual - 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa2[linha_atual][coluna_atual] != CHAO) && (mapa2[linha_atual][coluna_atual] != GRAMA)  && (mapa2[linha_atual][coluna_atual] != SAIDA)) {
+            linha_atual = linha_atual + 1;
+            printf("\n\nOps... ali nao =)\n");
+            getchar(); getchar();
+         }
+      }
+      if ((movimento == 's') || (movimento == 'S')) {
+         linha_atual = linha_atual + 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa2[linha_atual][coluna_atual] != CHAO) && (mapa2[linha_atual][coluna_atual] != GRAMA)  && (mapa2[linha_atual][coluna_atual] != SAIDA)) {
+            linha_atual = linha_atual - 1;
+            printf("\n\nOps... ali nao =)\n");
+            getchar(); getchar();
+         }
+           if (mapa2[linha_atual][coluna_atual] == SAIDA) {
+           	 getchar(); 
+           	  printf("\n Fase 2 completa.\n", registro.nome);
+           	   getchar(); 
+           	   fase = 3;
+         }
+      }
+      if ((movimento == 'd') || (movimento == 'D')) {
+         coluna_atual = coluna_atual + 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa2[linha_atual][coluna_atual] != CHAO) && (mapa2[linha_atual][coluna_atual] != GRAMA)  && (mapa2[linha_atual][coluna_atual] != SAIDA)) {
+            coluna_atual = coluna_atual - 1;
+            printf("\n\nOps... ali nao =)\n");
+            getchar(); getchar();
+         }
+      }
+      if ((movimento == 'a') || (movimento == 'A')) {
+         coluna_atual = coluna_atual - 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa2[linha_atual][coluna_atual] != CHAO) && (mapa2[linha_atual][coluna_atual] != GRAMA)  && (mapa2[linha_atual][coluna_atual] != SAIDA)) {
+            coluna_atual = coluna_atual + 1;
+            printf("\n\nOps... ali nao =)\n");
+            getchar(); getchar();
+         }
+      }
+          system("cls");
+   }
+   }
+   
+   if(fase == 3){
+   	linha_atual = 1;
+   	coluna_atual = 1;
+   	 while ((movimento != 'x') && (movimento != 'X') && (fase != 4)) {
+	printf("==================\n");
+    printf("||    FASE 3    ||\n");
+    printf("==================\n\n");
+      desenhar_mapa3();
+      printf("  (W)\n(A)+(D)\n  (S)\n\n"); /* Controles */
+      if ((scanf("%c",&movimento))==0) {
+         printf("mensagem de erro..\n");
+         getchar(); getchar();
+         return ERRO;
+      }
+      if ((movimento == 'w') || (movimento == 'W')) {
+         linha_atual = linha_atual - 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa3[linha_atual][coluna_atual] != CHAO) && (mapa3[linha_atual][coluna_atual] != GRAMA)  && (mapa3[linha_atual][coluna_atual] != SAIDA)) {
+         	if (mapa3[linha_atual][coluna_atual] == FAKE){
+         	printf("\n Ah nao! Voce caiu na armadilha da parede invisivel! =)\n");	
+			 }else{
+			 	printf("\n\nOps... ali nao =)\n");
+			 }
+            linha_atual = linha_atual + 1;
+            getchar(); getchar();
+         }
+      }
+      if ((movimento == 's') || (movimento == 'S')) {
+         linha_atual = linha_atual + 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa3[linha_atual][coluna_atual] != CHAO) && (mapa3[linha_atual][coluna_atual] != GRAMA)  && (mapa3[linha_atual][coluna_atual] != SAIDA)) {
+         	if (mapa3[linha_atual][coluna_atual] == FAKE){
+         	printf("\n Ah nao! Voce caiu na armadilha da parede invisivel! =)\n");		
+			 }else{
+			 	printf("\n\nOps... ali nao =)\n");
+			 }
+            linha_atual = linha_atual - 1;
+            getchar(); getchar();
+         }
+      }
+      if ((movimento == 'd') || (movimento == 'D')) {
+         coluna_atual = coluna_atual + 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa3[linha_atual][coluna_atual] != CHAO) && (mapa3[linha_atual][coluna_atual] != GRAMA)  && (mapa3[linha_atual][coluna_atual] != SAIDA)) {
+         	if (mapa3[linha_atual][coluna_atual] == FAKE){
+         	printf("\n Ah nao! Voce caiu na armadilha da parede invisivel! =)\n");		
+			 }else{
+			 	printf("\n\nOps... ali nao =)\n");
+			 }
+            coluna_atual = coluna_atual - 1;
+            getchar(); getchar();
+         }
+           if (mapa3[linha_atual][coluna_atual] == SAIDA) {
+           	 getchar(); 
+           	 printf("\n Parabens, %s! Voce finalizou o jogo!\n", registro.nome); //Usamos a struct aqui, mas apenas para guardar o nome. Na próxima entrega, escreveremos mais
+           	   getchar(); 
+           	   fase = 4;
+           	   fim_jogo = 1;
+         }
+      }
+      if ((movimento == 'a') || (movimento == 'A')) {
+         coluna_atual = coluna_atual - 1;
+         /* Se não andar no chao ou na grama, ele volta pra posicão anterior */
+         if ((mapa3[linha_atual][coluna_atual] != CHAO) && (mapa3[linha_atual][coluna_atual] != GRAMA)  && (mapa3[linha_atual][coluna_atual] != SAIDA)) {
+         	if (mapa3[linha_atual][coluna_atual] == FAKE){
+         	printf("\n Ah nao! Voce caiu na armadilha da parede invisivel! =)\n");	
+			 }else{
+			 	printf("\n\nOps... ali não =)\n");
+			 }
+            coluna_atual = coluna_atual + 1;
+            getchar(); getchar();
+         }
+      } 	
+          system("cls");
+   }
+   }
+   
+   
+   if (fim_jogo == 1){
+   	printf("FIM DE JOGO");
+   }
+}
